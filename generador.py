@@ -13,7 +13,10 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
                     "PYTHONUNBUFFERED=1",
                     "LOGGING_LEVEL=DEBUG"
                 ],
-                "networks": ["testing_net"]
+                "networks": ["testing_net"],
+                "volumes" : [
+                "./server/config.ini:/config.ini"
+                ],
             }
         },
         "networks": {
@@ -37,6 +40,9 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
                 "CLI_LOG_LEVEL=DEBUG"
             ],
             "networks": ["testing_net"],
+            "volumes": [
+                "./client/config.yaml:/config.yaml"
+            ],
             "depends_on": ["server"]
         }
 

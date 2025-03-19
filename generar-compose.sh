@@ -9,7 +9,12 @@ if [ -z "$1" ]; then
   archivo_salida=$ARCHIVO
 else
   archivo_salida=$1
+  
+  if [[ "$archivo_salida" != *.yaml ]]; then
+    archivo_salida="$archivo_salida.yaml"
+  fi
 fi
+
 
 if [ -z "$2" ]; then
   echo "No se proporcionó cantidad de clientes, usando valor por defecto: $CLIENTES"
