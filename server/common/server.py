@@ -69,12 +69,11 @@ class Server:
         logging.info(f"action: signal_received | result: success | signal: {signum}")
         
         self._server_socket.close()
-        logging.debug("action: server socket closed")
+        logging.debug("action: server socket closed | result: success")
 
         # Cerrar todos los sockets de clientes
         for cliente in self.clientes:
-            logging.debug("action: close client socket")
             cliente.close()
 
-        logging.debug("action: close all client sockets")
+        logging.debug("action: close all client sockets | result: success")
         sys.exit(0)
