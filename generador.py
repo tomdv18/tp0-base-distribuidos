@@ -19,7 +19,7 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
             },
               "validador": {
                 "container_name": "validador",
-                "entrypoint": ["/bin/sh", "./validar_echo_server.sh"],
+                "entrypoint": "/bin/sh ./validar_echo_server.sh",
                 "image": "alpine:latest",
                 "networks": ["testing_net"],
                 "volumes":[
