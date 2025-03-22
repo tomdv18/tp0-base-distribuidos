@@ -1,9 +1,12 @@
 package common
-
 import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/op/go-logging"
@@ -23,6 +26,7 @@ type ClientConfig struct {
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
+	quit chan struct {}
 }
 
 // NewClient Initializes a new client receiving the configuration
@@ -52,6 +56,8 @@ func (c *Client) createClientSocket() error {
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
+	go c.handleShutdown() // Ejecutamos el manejador de SIGTERM en una goroutine
+
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
@@ -87,3 +93,27 @@ func (c *Client) StartClientLoop() {
 	}
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
+
+func (c *Client) handleShutdown() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
+
+	<-sigChan // Espera la señal de terminación
+	log.Warningf("action: shutdown | result: received_signal | client_id: %v", c.config.ID)
+
+	close(c.quit)  // Cerramos el canal quit para indicar que debemos parar
+	c.closeClientSocket() // Cerramos la conexión antes de salir
+
+	log.Warningf("action: shutdown | result: success | client_id: %v", c.config.ID)
+}
+// closeClientSocket Cierra la conexión del cliente de manera segura
+func (c *Client) closeClientSocket() {
+	if c.conn != nil {
+		log.Infof("action: close_socket | result: success | client_id: %v", c.config.ID)
+		c.conn.Close()
+		c.conn = nil
+	}
+}
+
+
+
