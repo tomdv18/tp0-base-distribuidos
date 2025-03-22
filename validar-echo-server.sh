@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Archivo de configuración
-CONFIG_FILE="config.ini"
+CONFIG_FILE="server/config.ini"
 
 SERVER=$(grep "^SERVER_IP" "$CONFIG_FILE" | sed -E 's/^SERVER_IP *= *//')
 PORT=$(grep "^SERVER_PORT" "$CONFIG_FILE" | sed -E 's/^SERVER_PORT *= *//')
