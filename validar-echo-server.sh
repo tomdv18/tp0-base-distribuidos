@@ -14,7 +14,7 @@ if [ -z "$SERVER" ] || [ -z "$PORT" ]; then
   exit 1
 fi
 
-RESPONSE=$(echo "$MENSAJE" | docker run --rm --network tp0-tom_testing_net busybox nc "$SERVER" "$PORT")
+RESPONSE=$(docker run --rm --network tp0_testing_net busybox sh -c "echo '$MENSAJE' | nc $SERVER $PORT")
 
 
 
