@@ -14,10 +14,10 @@ if [[ -z "$SERVER" || -z "$PORT" ]]; then
   exit 1
 fi
 SERVER_DIR="${SERVER}:${PORT}"
-# Ejecutar netcat dentro de un contenedor Docker
-RESPONSE=$(echo "$MENSAJE" | nc "$SERVER_DIR")
 
-# Validar respuesta
+
+RESPONSE=$(echo "$MENSAJE" | docker run --rm --network host busybox nc "$SERVER_DIR")
+
 if [[ "$RESPONSE" == "$MENSAJE" ]]; then
   echo "action: test_echo_server | result: success"
 else
