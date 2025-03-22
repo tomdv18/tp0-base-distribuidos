@@ -98,15 +98,15 @@ func (c *Client) handleShutdown() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
 
-	<-sigChan // Espera la señal de terminación
-	log.Warningf("action: shutdown | result: received_signal | client_id: %v", c.config.ID)
+	<-sigChan
+	log.Infof("action: shutdown | result: received_signal | client_id: %v", c.config.ID)
 
-	close(c.quit)  // Cerramos el canal quit para indicar que debemos parar
-	c.closeClientSocket() // Cerramos la conexión antes de salir
+	close(c.quit)
+	c.closeClientSocket() 
 
-	log.Warningf("action: shutdown | result: success | client_id: %v", c.config.ID)
+	log.Infof("action: shutdown | result: success | client_id: %v", c.config.ID)
 }
-// closeClientSocket Cierra la conexión del cliente de manera segura
+
 func (c *Client) closeClientSocket() {
 	if c.conn != nil {
 		log.Infof("action: close_socket | result: success | client_id: %v", c.config.ID)
