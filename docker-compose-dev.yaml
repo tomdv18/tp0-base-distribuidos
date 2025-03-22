@@ -38,5 +38,5 @@ services:
     depends_on:
     - server
     volumes:
-    - ./validar_echo_server.sh:/validar_echo_server.sh
+    - /validar_echo_server.sh:/validar_echo_server.sh
     - ./server/config.ini:/config.ini
