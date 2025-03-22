@@ -35,6 +35,7 @@ func NewClient(config ClientConfig) *Client {
 	client := &Client{
 		config: config,
 	}
+	quit:   make(chan struct{}),
 	return client
 }
 
@@ -101,7 +102,12 @@ func (c *Client) handleShutdown() {
 	<-sigChan
 	log.Infof("action: shutdown | result: received_signal | client_id: %v", c.config.ID)
 
-	close(c.quit)
+	select {
+	case <-c.quit:
+		
+	default:
+		close(c.quit) // Solo se cierrar si todavia no se cerro
+	}
 	c.closeClientSocket() 
 
 	log.Infof("action: shutdown | result: success | client_id: %v", c.config.ID)
