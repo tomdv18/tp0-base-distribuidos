@@ -23,8 +23,8 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
                 "image": "alpine:latest",
                 "networks": ["testing_net"],
                 "volumes":[
-                "- ./validar_echo_server.sh:/validar_echo_server.sh",
-                "- ./server/config.ini:/config.ini"
+                "./validar_echo_server.sh:/validar_echo_server.sh",
+                "./server/config.ini:/config.ini"
                  ],
                 "depends_on": ["server"]
             }
