@@ -14,10 +14,9 @@ if [ -z "$SERVER" ] || [ -z "$PORT" ]; then
   exit 1
 fi
 
-SERVER_DIR="${SERVER}:${PORT}"
-echo "Probando conexión con $SERVER_DIR"
+RESPONSE=$(echo "$MENSAJE" | docker run --rm --network tp0-tom_testing_net busybox nc "$SERVER" "$PORT")
 
-RESPONSE=$(echo "$MENSAJE" | docker run --rm --network host busybox nc "$SERVER" "$PORT")
+
 
 if [ "$RESPONSE" = "$MENSAJE" ]; then
   echo "action: test_echo_server | result: success | address: $SERVER_DIR"
