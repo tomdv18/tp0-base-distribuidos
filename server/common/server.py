@@ -13,7 +13,7 @@ class Server:
         signal.signal(signal.SIGINT, self.__signal_handler)
         signal.signal(signal.SIGTERM, self.__signal_handler)
 
-        clientes = []
+        self.clientes = []
 
     def run(self):
         """
@@ -66,14 +66,15 @@ class Server:
         return c
 
     def __signal_handler(self, signum, frame):
-        logging.info(
-             f"action: signal_received | signal: {signum}")
-        self._server_socket.close()
-        logging.info('server socket closed')
-        for cliente in self.clientes:
-            logging.debug('action: close client socket')
-            cliente.close()
+        logging.info(f"action: signal_received | signal: {signum}")
         
-        logging.info('action: close all client sockets')
- 
+        self._server_socket.close()
+        logging.info("action: server socket closed")
+
+        # Cerrar todos los sockets de clientes
+        for cliente in self.clientes:
+            logging.debug("action: close client socket")
+            cliente.close()
+
+        logging.info("action: close all client sockets")
         sys.exit(0)
