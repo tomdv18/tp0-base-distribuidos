@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"time"
+ 	"syscall"
 
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
@@ -109,7 +110,9 @@ func main() {
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
+	chanell := make(chan os.Signal, 1)
+ 	signal.Notify(chanell, syscall.SIGTERM)
 
-	client := common.NewClient(clientConfig)
+	client := common.NewClient(clientConfig, channel)
 	client.StartClientLoop()
 }
