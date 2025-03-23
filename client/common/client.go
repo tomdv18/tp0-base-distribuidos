@@ -64,6 +64,13 @@ func (c *Client) StartClientLoop() {
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
 		// Create the connection the server in every loop iteration. Send an
+		select {
+		case <-c.quit:
+			log.Infof("action: client_exit | result: received_shutdown_signal | client_id: %v", c.config.ID)
+			return
+		default:
+
+		}
 		c.createClientSocket()
 
 		// TODO: Modify the send to avoid short-write
@@ -112,12 +119,14 @@ func (c *Client) handleShutdown() {
 	c.closeClientSocket() 
 
 	log.Infof("action: shutdown | result: success | client_id: %v", c.config.ID)
+
+	os.exit(0)
 }
 
 func (c *Client) closeClientSocket() {
 	if c.conn != nil {
 		log.Infof("action: close_socket | result: success | client_id: %v", c.config.ID)
-		c.conn.Close()
+		_ = c.conn.Close() // Ignorar el error si la conexión ya está cerrada
 		c.conn = nil
 	}
 }
