@@ -34,8 +34,9 @@ type Client struct {
 func NewClient(config ClientConfig) *Client {
 	client := &Client{
 		config: config,
+		quit: make(chan struct{}),
 	}
-	quit:   make(chan struct{}),
+
 	return client
 }
 
