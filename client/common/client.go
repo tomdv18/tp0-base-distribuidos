@@ -19,19 +19,19 @@ type ClientConfig struct {
 	LoopPeriod    time.Duration
 }
 
-// Client Entity that encapsulates how
+// Client Entity that encapsulates how the client works
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
+	quit   chan os.Signal
 }
 
-// NewClient Initializes a new client receiving the configuration
-// as a parameter
-func NewClient(config ClientConfig) *Client {
-	client := &Client{
+// NewClient Initializes a new client receiving the configuration and quit channel
+func NewClient(config ClientConfig, quit chan os.Signal) *Client {
+	return &Client{
 		config: config,
+		quit:   quit
 	}
-	return client
 }
 
 // CreateClientSocket Initializes client socket. In case of
@@ -52,6 +52,15 @@ func (c *Client) createClientSocket() error {
 
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
+	go func() {
+		<-c.quit
+		log.Info("action: signal received | result: success | client_id: %v", c.config.ID)
+		if c.conn != nil {
+			c.conn.Close()
+		}
+		log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+		os.Exit(0)
+	}()
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {

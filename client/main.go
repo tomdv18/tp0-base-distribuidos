@@ -110,7 +110,7 @@ func main() {
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
-	chanell := make(chan os.Signal, 1)
+	channel := make(chan os.Signal, 1)
  	signal.Notify(chanell, syscall.SIGTERM)
 
 	client := common.NewClient(clientConfig, channel)
