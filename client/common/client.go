@@ -54,7 +54,6 @@ func (c *Client) createClientSocket() error {
 func (c *Client) StartClientLoop() {
 	go func() {
 		<-c.quit
-		log.Info("action: signal received | result: success | client_id: %v", c.config.ID)
 		if c.conn != nil {
 			c.conn.Close()
 		}
@@ -64,6 +63,11 @@ func (c *Client) StartClientLoop() {
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
+		select {
+		case <-c.quit:
+			log.Info("action: received termination signal. | result: in_progress | client_id: %v", c.config.ID)
+			return
+		default:
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()
 
