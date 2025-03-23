@@ -69,7 +69,7 @@ func (c *Client) StartClientLoop() {
 		case <-c.sigChan:
 			log.Infof("Received SIGTERM. Shutting down gracefully...")
 			c.closeClientSocket()
-			return
+			os.Exit(0)
 		default:
 		}
 
