@@ -59,23 +59,11 @@ func (c *Client) shutdown_client(quit chan os.Signal) {
 
 
 // StartClientLoop Send messages to the client until some time threshold is met
-func (c *Client) StartClientLoop() {
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+func (c *Client) StartClientLoop(quit chan os.Signal) {
 
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
-
-		select	{
-		case <-quit:
-			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
-			c.shutdown_client(quit)
-			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
-			return
-		default:
-		}
 
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()
@@ -102,6 +90,15 @@ func (c *Client) StartClientLoop() {
 			c.config.ID,
 			msg,
 		)
+
+		select	{
+		case <-quit:
+			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
+			//c.shutdown_client(quit)
+			//log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+			break
+		default:
+		}
 		// Wait a time between sending one message and the next one
 		time.Sleep(c.config.LoopPeriod)
 
