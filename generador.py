@@ -36,6 +36,11 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
             "entrypoint": "/client",
             "environment": [
                 f"CLI_ID={i}",
+                f"NOMBRE={nombre}"
+                f"APELLIDO={nombre}"
+                f"DOCUMENTO={i+23322510}"
+                f"NACIMIENTO=18/10/1985"
+                f"NUMERO={(i+7)*4}"
             ],
             "networks": ["testing_net"],
             "volumes": [
