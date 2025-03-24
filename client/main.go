@@ -21,7 +21,7 @@ var log = logging.MustGetLogger("log")
 // config file ./config.yaml. Environment variables takes precedence over parameters
 // defined in the configuration file. If some of the variables cannot be parsed,
 // an error is returned
-func InitConfig() (*viper.Viper, error) {
+func InitConfig() (*viper.Viper, error, common.ClientData) {
 	v := viper.New()
 
 	// Configure viper to read env variables with the CLI_ prefix
@@ -51,16 +51,16 @@ func InitConfig() (*viper.Viper, error) {
 	// Parse time.Duration variables and return an error if those variables cannot be parsed
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
-		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration."), nil
+		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration."), common.ClientData{}
 	}
 
 
 	clientData := common.ClientData{
-		numero: os.Getenv("NOMBRE"),
-		apellido: os.Getenv("APELLIDO"),
-		documento: os.Getenv("DOCUMENTO"),
-		nacimiento: os.Getenv("NACIMIENTO"),
-		numero: os.Getenv("NUMERO"),
+		Nombre: os.Getenv("NOMBRE"),
+		Apellido: os.Getenv("APELLIDO"),
+		Documento: os.Getenv("DOCUMENTO"),
+		Nacimiento: os.Getenv("NACIMIENTO"),
+		Numero: os.Getenv("NUMERO"),
 	}
 
 	return v, nil, clientData
@@ -90,7 +90,7 @@ func InitLogger(logLevel string) error {
 
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
-func PrintConfig(v *viper.Viper, clientData *common.ClientData) {
+func PrintConfig(v *viper.Viper, clientData common.ClientData) {
 	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s",
 		v.GetString("id"),
 		v.GetString("server.address"),
@@ -101,11 +101,11 @@ func PrintConfig(v *viper.Viper, clientData *common.ClientData) {
 
 
 	log.Infof("action: config_data | result: success | nombre: %s | apellido: %s | documento: %s | nacimiento: %s | numero: %s",
-		clientData.nombre,
-		clientData.apellido,
-		clientData.documento,
-		clientData.nacimiento,
-		clientData.numero,
+		clientData.Nombre,
+		clientData.Apellido,
+		clientData.Documento,
+		clientData.Nacimiento,
+		clientData.Numero,
 	)
 }
 

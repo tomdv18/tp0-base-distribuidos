@@ -6,6 +6,8 @@ import (
 	"net"
 	"time"
 	"os"
+	"io"
+	"encoding/binary"
 	"github.com/op/go-logging"
 )
 
@@ -28,11 +30,11 @@ type Client struct {
 }
 
 type ClientData struct {
-	nombre string
-	apellido string
-	documento int
-	nacimiento string
-	numero int
+	Nombre string
+	Apellido string
+	Documento string
+	Nacimiento string
+	Numero string
 }
 
 // NewClient Initializes a new client receiving the configuration
@@ -49,8 +51,8 @@ func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) 
 
 
 
-func send_message(conn net.Conn) (string, error) {
-	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.clientData.nombre, c.clientData.apellido, c.clientData.documento, c.clientData.nacimiento, c.clientData.numero, c.config.ID)
+func (c *Client) send_message(conn net.Conn) (string, error) {
+	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.clientData.Nombre, c.clientData.Apellido, c.clientData.Documento, c.clientData.Nacimiento, c.clientData.Numero, c.config.ID)
 	len := len(message)
 	binary.Write(conn, binary.BigEndian, uint16(len))
 	io.WriteString(conn, message)
@@ -92,7 +94,7 @@ func (c *Client) StartClientLoop() {
 		c.createClientSocket()
 
 
-		msg, err := send_message(c.conn)
+		msg, err := c.send_message(c.conn)
 		c.conn.Close()
 
 		if err != nil {
