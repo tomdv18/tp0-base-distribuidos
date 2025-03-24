@@ -93,10 +93,7 @@ func (c *Client) StartClientLoop() {
 			return
 		}
 
-		log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
-			c.clientData[0].Documento,
-			msg,
-		)
+		log.Infof("action: apuesta_enviada | result: success")
 
 
 		select	{
