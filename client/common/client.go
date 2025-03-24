@@ -24,14 +24,24 @@ type Client struct {
 	config ClientConfig
 	conn   net.Conn
 	quit chan os.Signal
+	clientData ClientData
+}
+
+type ClientData struct {
+	nombre string
+	apellido string
+	documento int
+	nacimiento string
+	numero int
 }
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter
-func NewClient(config ClientConfig, quit chan os.Signal) *Client {
+func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) *Client {
 	client := &Client{
 		config: config,
 		quit: quit,
+		clientData: clientData,
 	}
 	return client
 }

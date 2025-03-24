@@ -91,6 +91,7 @@ func PrintConfig(v *viper.Viper) {
 	)
 }
 
+
 func main() {
 	v, err := InitConfig()
 	if err != nil {
@@ -113,7 +114,14 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
+	clientData := common.ClientData{
+		numero: os.Getenv("NOMBRE"),
+		apellido: os.Getenv("APELLIDO"),
+		documento: os.Getenv("DOCUMENTO"),
+		nacimiento: os.Getenv("NACIMIENTO"),
+		numero: os.Getenv("NUMERO"),
+	}
 
-	client := common.NewClient(clientConfig, quit)
+	client := common.NewClient(clientConfig, quit, clientData)
 	client.StartClientLoop()
 }
