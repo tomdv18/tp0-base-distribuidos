@@ -6,6 +6,7 @@ import (
 	"io"
 	"encoding/binary"
 	"fmt"
+	"errors"
 )
 
 
