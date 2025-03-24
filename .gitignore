@@ -4,3 +4,4 @@
 # Executables
 bin/
 docker-compose-dev-tom.yaml
+*.csv

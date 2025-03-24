@@ -14,15 +14,16 @@ services:
     environment:
     - CLI_ID=1
     - NOMBRE=client1
-    - APELLIDO=apellido1
-    - DOCUMENTO=2345678
-    - NACIMIENTO=1990-01-01
-    - NUMERO=1564
+    - APELLIDO=client1
+    - DOCUMENTO=23322511
+    - NACIMIENTO=1985-10-18
+    - NUMERO=32
     image: client:latest
     networks:
     - testing_net
     volumes:
     - ./client/config.yaml:/config.yaml
+    - ./.data/agency-1.csv:/agency.csv
   server:
     container_name: server
     entrypoint: python3 /main.py
