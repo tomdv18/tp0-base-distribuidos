@@ -54,7 +54,7 @@ func (c *Client) createClientSocket() error {
 func (c *Client) shutdown_client(quit chan os.Signal) {
 	c.conn.Close()
 	log.Infof("action: socket_closing | result: success | client_id: %v",c.config.ID)
-	close(quit)
+	//close(quit)
 }
 
 
