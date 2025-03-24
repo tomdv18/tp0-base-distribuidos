@@ -16,7 +16,6 @@ func send_message(conn net.Conn, id string, bets []ClientData, maxBatchSize int)
 	for _, bet := range bets {
 		message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", id, bet.Nombre, bet.Apellido, bet.Documento, bet.Nacimiento, bet.Numero)
 		messages = append(messages, message)
-		log.Infof("action: create_message | result: success | message: %v", message)
 	}
 
 	log.Infof("action: ammount_messages | result: success | messages: %v", len(messages))
@@ -66,7 +65,7 @@ func send_message(conn net.Conn, id string, bets []ClientData, maxBatchSize int)
 		return "", err
 	}
 
-	log.Infof("action: receive_message | result: success | server_response: %v", msg)
+	log.Infof("action: receive_message | result: success ")
 
 	return msg, nil
 }
