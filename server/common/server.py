@@ -44,7 +44,7 @@ class Server:
             lenght = int.from_bytes(lenght_bytes, byteorder='big')
             logging.info(f'action: recieve_length | result: success | length: {lenght}')
 
-            msg = client_sock.recv(lenght).decode('utf-8')
+            msg = client_sock.recv(lenght).decode('utf-8').strip()
 
             addr = client_sock.getpeername()
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
@@ -56,7 +56,7 @@ class Server:
             logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} |numero: {bet.number}')
 
 
-            client_sock.sendall("{}\n".format(bet.number).encode('utf-8'))
+            client_sock.send("{}\n".format(bet.number).encode('utf-8'))
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
