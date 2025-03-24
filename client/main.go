@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
  	"syscall"
-
+	"os/signal"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
