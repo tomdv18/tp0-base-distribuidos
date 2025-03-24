@@ -96,7 +96,7 @@ func (c *Client) StartClientLoop(quit chan os.Signal) {
 			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
 			c.shutdown_client(quit)
 			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
-			break
+			return
 		default:
 		}
 		// Wait a time between sending one message and the next one
