@@ -70,6 +70,12 @@ func (c *Client) shutdown_client() {
 	log.Infof("action: socket_closing | result: success | client_id: %v",c.config.ID)
 }
 
+func (c *Client) obtain_winners() {
+	c.createClientSocket()
+	_, err := send_winners(c.conn, c.config.ID)
+	c.conn.Close()
+}
+
 
 
 // StartClientLoop Send messages to the client until some time threshold is met
@@ -120,5 +126,6 @@ func (c *Client) StartClientLoop() {
 
 	}
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+	c.obtain_winners()
 	time.Sleep(0100 * time.Millisecond)
 }
