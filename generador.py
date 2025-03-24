@@ -39,7 +39,7 @@ def generar_docker_compose(archivo_salida, cantidad_clientes):
                 f"NOMBRE={nombre}",
                 f"APELLIDO={nombre}",
                 f"DOCUMENTO={i+23322510}",
-                f"NACIMIENTO=18/10/1985",
+                f"NACIMIENTO=1985-10-18",
                 f"NUMERO={(i+7)*4}",
             ],
             "networks": ["testing_net"],
