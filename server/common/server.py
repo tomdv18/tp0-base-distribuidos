@@ -52,7 +52,8 @@ class Server:
             bet = Bet(*msg.split(';'))
             logging.info(f'action: create_bet | result: success | bet: {bet.number}')
             store_bets([bet])
-            logging.info(f'action: store_bet | result: success | bet: {bet.number}')
+
+            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} |numero: {bet.number}')
 
 
             client_sock.sendall("{}\n".format(bet.number).encode('utf-8'))

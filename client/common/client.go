@@ -105,10 +105,11 @@ func (c *Client) StartClientLoop() {
 			return
 		}
 
-		log.Infof("action: receive_message | result: success | client_id: %v | msg: %v",
-			c.config.ID,
+		log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
+			c.clientData.Documento,
 			msg,
 		)
+
 
 		select	{
 		case <-c.quit:
