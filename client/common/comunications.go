@@ -6,57 +6,67 @@ import (
 	"io"
 	"encoding/binary"
 	"fmt"
-	"errors"
 )
+
+
 func send_message(conn net.Conn, id string, bets []ClientData, maxBatchSize int) (string, error) {
 	var messages []string
-	var err error
-	var response string
 
+	// Crear el array de mensajes
 	for _, bet := range bets {
 		message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", id, bet.Nombre, bet.Apellido, bet.Documento, bet.Nacimiento, bet.Numero)
 		messages = append(messages, message)
+		log.Infof("action: create_message | result: success | message: %v", message)
 	}
 
-	log.Infof("action: ammount_messages | result: success | messages_count: %d", len(messages))
+	log.Infof("action: ammount_messages | result: success | messages: %v", len(messages))
 
-	for len(messages) > 0 {
-		var batch []string
-		var batchMessage string
-
-		// Tomar hasta maxBatchSize elementos o menos si quedan pocos
-		batchSize := maxBatchSize
-		if len(messages) < maxBatchSize {
-			batchSize = len(messages)
+	
+	for i := 0; i < len(messages); i += maxBatchSize {
+		// Determinar el tamaño del batch (puede ser menor que maxBatchSize en el último grupo)
+		end := i + maxBatchSize
+		if end > len(messages) {
+			end = len(messages)
 		}
-		batch = messages[:batchSize]
 
-		batchMessage = strings.Join(batch, ">")
-		messages = messages[batchSize:]
+		// Crear un slice de los mensajes para este grupo
+		batch := messages[i:end]
+		
+		// Concatenar los mensajes en el batch con ">" como delimitador, sin agregar ">" al final
+		batchMessage := ""
+		for j, msg := range batch {
+			if j > 0 {
+				batchMessage += ">"
+			}
+			batchMessage += msg
+		}
 
-		// Verificar que no supere 8KB
+		// Verificar que el mensaje no exceda el tamaño permitido (por ejemplo, 8192 bytes)
 		if len(batchMessage) > 8192 {
-			return "", errors.New("The message size is too large")
+			return "", fmt.Errorf("The message is too long")
 		}
-		binary.Write(conn, binary.BigEndian, uint16(len(batchMessage)))
+
+		// Enviar el mensaje
+		err := binary.Write(conn, binary.BigEndian, uint16(len(batchMessage)))
+		if err != nil {
+			return "", fmt.Errorf("failed to write message length: %v", err)
+		}
 		_, err = io.WriteString(conn, batchMessage)
 		if err != nil {
-			log.Errorf("action: send_message | result: fail | error: %v", err)
-			return "", err
+			return "", fmt.Errorf("failed to send message: %v", err)
 		}
 
-		log.Infof("action: send_message | result: success | batch_size: %d | message: %v", batchSize, batchMessage)
-
-
 	}
+	
 
-	response, err = bufio.NewReader(conn).ReadString('\n')
+	// Recibir respuesta del servidor
+	msg, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
 		log.Errorf("action: receive_message | result: fail | error: %v", err)
 		return "", err
 	}
 
-	log.Infof("action: receive_message | result: success | server_response: %v", response)
+	log.Infof("action: receive_message | result: success | server_response: %v", msg)
 
-	return response, err
+	return msg, nil
 }
