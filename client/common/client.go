@@ -94,8 +94,8 @@ func (c *Client) StartClientLoop(quit chan os.Signal) {
 		select	{
 		case <-quit:
 			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
-			//c.shutdown_client(quit)
-			//log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+			c.shutdown_client(quit)
+			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 			break
 		default:
 		}
