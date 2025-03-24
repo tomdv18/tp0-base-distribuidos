@@ -3,6 +3,8 @@ import logging
 import sys
 import signal
 from .utils import Bet, store_bets
+from .comunications import recieve_bet, send_response
+
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -40,23 +42,14 @@ class Server:
         client socket will also be closed
         """
         try:
-            lenght_bytes = client_sock.recv(2)
-            lenght = int.from_bytes(lenght_bytes, byteorder='big')
-            logging.info(f'action: recieve_length | result: success | length: {lenght}')
 
-            msg = client_sock.recv(lenght).decode('utf-8').strip()
-
-            addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-
-            bet = Bet(*msg.split(';'))
-            logging.info(f'action: create_bet | result: success | bet: {bet.number}')
+            bet = recieve_bet(client_sock)
+            
             store_bets([bet])
 
             logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} |numero: {bet.number}')
 
-
-            client_sock.send("{}\n".format(bet.number).encode('utf-8'))
+            send_response(client_sock, bet.number)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
