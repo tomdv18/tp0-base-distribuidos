@@ -3,7 +3,7 @@ import logging
 import sys
 import signal
 import threading
-from .utils import Bet, store_bets
+from .utils import Bet, store_bets, load_bets, has_won
 from .comunications import recieve_message, send_response
 
 
@@ -46,15 +46,15 @@ class Server:
         """
         try:
 
-            is_winners, bets, failed = recieve_message(client_sock)
+            is_winners, bets, aux = recieve_message(client_sock)
 
             if not is_winners:
                 for bet in bets:
                     store_bets([bet])
 
                 msg =""
-                if failed > 0:
-                    msg =f'action: apuesta_recibida | result: fail | cantidad: {len(bets) + failed}'
+                if aux > 0:
+                    msg =f'action: apuesta_recibida | result: fail | cantidad: {len(bets) + aux}'
                 else:
                     msg =f'action: apuesta_recibida | result: success | cantidad: {len(bets)}'
 
@@ -68,7 +68,7 @@ class Server:
                 
                 if len(self.clientes_finalizados) == len(self.sockets_clientes):
                     logging.info("action: get winner | result: in_progress")
-                    
+                    send_winners(aux, client_sock)
                 pass
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
@@ -102,3 +102,19 @@ class Server:
 
         logging.debug("action: close all client sockets | result: success")
         sys.exit(0)
+
+    def __send_winners(self, id, client_sock):
+        agency_winners = []
+
+        bets = load_bets()
+        winners = [bet for bet in bets if has_won(bet)]
+
+        for winner in winners:
+            if winner.id == id:
+                agency_winners.append(winner.agency)
+                logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.id} | agency: {id}')
+
+        send_winners_response(client_sock, agency_winners)
+
+
+

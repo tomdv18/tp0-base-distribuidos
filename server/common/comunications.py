@@ -28,7 +28,7 @@ def recieve_winners(client_sock):
     logging.info(f'action: recieve_winners | result: success | length: {lenght}')
     msg = client_sock.recv(lenght).decode('utf-8')
 
-    return True, None, 0
+    return True, None, msg
 
 
 
@@ -63,3 +63,6 @@ def recieve_bet(client_sock):
 
 def send_response(client_sock, msg):
     client_sock.send("{}\n".format(msg).encode('utf-8'))
+
+def send_winners_response(winners, client_sock):
+    
