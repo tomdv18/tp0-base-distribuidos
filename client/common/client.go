@@ -85,6 +85,12 @@ func (c *Client) shutdown_client() {
 }
 
 
+func (c *Client) format_message() string {
+	log.Infof("action: message_format | result: success | client_id: %v", c.config.ID)
+	return fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.config.ID, c.clientData.Nombre, c.clientData.Apellido, c.clientData.Documento, c.clientData.Nacimiento, c.clientData.Numero)
+
+}
+
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 
@@ -96,7 +102,7 @@ func (c *Client) StartClientLoop() {
 		c.createClientSocket()
 
 
-		msg, err := c.send_message(c.conn)
+		msg, err := send_message(c.conn, c.format_message())
 		c.conn.Close()
 
 		if err != nil {
