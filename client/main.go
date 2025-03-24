@@ -51,10 +51,19 @@ func InitConfig() (*viper.Viper, error) {
 	// Parse time.Duration variables and return an error if those variables cannot be parsed
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
-		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration.")
+		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration."), nil
 	}
 
-	return v, nil
+
+	clientData := common.ClientData{
+		numero: os.Getenv("NOMBRE"),
+		apellido: os.Getenv("APELLIDO"),
+		documento: os.Getenv("DOCUMENTO"),
+		nacimiento: os.Getenv("NACIMIENTO"),
+		numero: os.Getenv("NUMERO"),
+	}
+
+	return v, nil, clientData
 }
 
 // InitLogger Receives the log level to be set in go-logging as a string. This method
@@ -81,7 +90,7 @@ func InitLogger(logLevel string) error {
 
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
-func PrintConfig(v *viper.Viper) {
+func PrintConfig(v *viper.Viper, clientData common.ClientData) {
 	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s",
 		v.GetString("id"),
 		v.GetString("server.address"),
@@ -89,11 +98,19 @@ func PrintConfig(v *viper.Viper) {
 		v.GetDuration("loop.period"),
 		v.GetString("log.level"),
 	)
+
+	log.Infof("action: config | result: success | nombre: %s | apellido: %s | documento: %s | nacimiento: %s | numero: %s",
+		clientData.nombre,
+		clientData.apellido,
+		clientData.documento,
+		clientData.nacimiento,
+		clientData.numero,
+	)
 }
 
 
 func main() {
-	v, err := InitConfig()
+	v, err, clientData := InitConfig()
 	if err != nil {
 		log.Criticalf("%s", err)
 	}
@@ -103,7 +120,7 @@ func main() {
 	}
 
 	// Print program config with debugging purposes
-	PrintConfig(v)
+	PrintConfig(v, clientData)
 
 	clientConfig := common.ClientConfig{
 		ServerAddress: v.GetString("server.address"),
@@ -114,13 +131,6 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
-	clientData := common.ClientData{
-		numero: os.Getenv("NOMBRE"),
-		apellido: os.Getenv("APELLIDO"),
-		documento: os.Getenv("DOCUMENTO"),
-		nacimiento: os.Getenv("NACIMIENTO"),
-		numero: os.Getenv("NUMERO"),
-	}
 
 	client := common.NewClient(clientConfig, quit, clientData)
 	client.StartClientLoop()
