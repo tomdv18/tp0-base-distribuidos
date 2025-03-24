@@ -74,10 +74,7 @@ func (c *Client) shutdown_client() {
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 
-	// There is an autoincremental msgID to identify every message sent
-	// Messages if the message amount threshold has not been surpassed
-	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
-
+	loop: for {
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()
 
@@ -100,8 +97,7 @@ func (c *Client) StartClientLoop() {
 		case <-c.quit:
 			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
 			c.shutdown_client()
-			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
-			return
+			break loop
 		default:
 		}
 		// Wait a time between sending one message and the next one
