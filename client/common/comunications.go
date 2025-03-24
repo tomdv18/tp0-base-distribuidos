@@ -63,18 +63,19 @@ func send_message(conn net.Conn, id string, bets []ClientData) (string, error) {
 }
 
 func send_winners(conn net.Conn, id string) (string, error) {
+	msg := id
 
 	err := binary.Write(conn, binary.BigEndian, Winners)
 	if err != nil {
 		return fmt.Errorf("failed to write message type: %v", err)
 	}
 	// Envio el largo
-	err := binary.Write(conn, binary.BigEndian, uint16(len(chunkMessage)))
+	err := binary.Write(conn, binary.BigEndian, uint16(len(msg)))
 	if err != nil {
 		return "", fmt.Errorf("failed to write message length: %v", err)
 	}
 	//envio el mensaje
-	_, err = io.WriteString(conn, chunkMessage)
+	_, err = io.WriteString(conn, msg)
 	if err != nil {
 		return "", fmt.Errorf("failed to send message: %v", err)
 	}

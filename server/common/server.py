@@ -2,6 +2,7 @@ import socket
 import logging
 import sys
 import signal
+import threading
 from .utils import Bet, store_bets
 from .comunications import recieve_message, send_response
 
@@ -16,7 +17,9 @@ class Server:
         signal.signal(signal.SIGINT, self.__signal_handler)
         signal.signal(signal.SIGTERM, self.__signal_handler)
 
-        self.clientes = []
+        self.sockets_clientes = []
+        self.clientes_finalizados = []
+        self.clientes_fin_lock = threading.Lock()
 
     def run(self):
         """
@@ -31,7 +34,7 @@ class Server:
         # the server
         while True:
             client_sock = self.__accept_new_connection()
-            self.clientes.append(client_sock)
+            self.sockets_clientes.append(client_sock)
             self.__handle_client_connection(client_sock)
 
     def __handle_client_connection(self, client_sock):
@@ -59,12 +62,19 @@ class Server:
 
                 send_response(client_sock, msg)
             else:
+                with self.clientes_fin_lock:
+                    self.clientes_finalizados.append(client_sock)
+                    logging.info("action: finalizar_cliente | result: success")
+                
+                if len(self.clientes_finalizados) == len(self.sockets_clientes):
+                    logging.info("action: get winner | result: in_progress")
+                    
                 pass
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
             client_sock.close()
-            self.clientes.remove(client_sock)
+            self.sockets_clientes.remove(client_sock)
 
     def __accept_new_connection(self):
         """
@@ -87,7 +97,7 @@ class Server:
         logging.debug("action: server socket closed | result: success")
 
         # Cerrar todos los sockets de clientes
-        for cliente in self.clientes:
+        for cliente in self.sockets_clientes:
             cliente.close()
 
         logging.debug("action: close all client sockets | result: success")
