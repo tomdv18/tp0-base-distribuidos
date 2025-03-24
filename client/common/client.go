@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/op/go-logging"
@@ -24,21 +21,22 @@ type ClientConfig struct {
 
 // Client Entity that encapsulates how
 type Client struct {
-	config  ClientConfig
-	conn    net.Conn
-	sigChan chan os.Signal
+	config ClientConfig
+	conn   net.Conn
 }
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter
-func NewClient(config ClientConfig, sigChan chan os.Signal) *Client {
-	return &Client{
-		config:  config,
-		sigChan: sigChan,
+func NewClient(config ClientConfig) *Client {
+	client := &Client{
+		config: config,
 	}
+	return client
 }
 
-// createClientSocket Initializes client socket.
+// CreateClientSocket Initializes client socket. In case of
+// failure, error is printed in stdout/stderr and exit 1
+// is returned
 func (c *Client) createClientSocket() error {
 	conn, err := net.Dial("tcp", c.config.ServerAddress)
 	if err != nil {
@@ -47,49 +45,49 @@ func (c *Client) createClientSocket() error {
 			c.config.ID,
 			err,
 		)
-		return err
 	}
 	c.conn = conn
 	return nil
 }
 
-// closeClientSocket Closes the client socket gracefully
-func (c *Client) closeClientSocket() {
-	if c.conn != nil {
-		log.Infof("Closing client socket for client_id: %v", c.config.ID)
-		c.conn.Close()
-	}
+
+func (c *Client) shutdown_client(quit chan os.Signal) {
+	c.conn.Close()
+	log.Infof("action: socket_closing | result: success | client_id: %v",c.config.ID)
+
 }
 
-// StartClientLoop Handles client message sending with graceful shutdown
+
+// StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM)
+
+	// There is an autoincremental msgID to identify every message sent
+	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
-		// Manejo de interrupción SIGTERM
-		select {
-		case <-c.sigChan:
-			log.Infof("Received SIGTERM. Shutting down gracefully...")
-			c.closeClientSocket()
-			os.Exit(0)
+
+		select	{
+		case <-quit:
+			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
+			c.shutdown_client(quit)
+			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+			return
 		default:
 		}
+		// Create the connection the server in every loop iteration. Send an
+		c.createClientSocket()
 
-		// Crear conexión al servidor
-		err := c.createClientSocket()
-		if err != nil {
-			return
-		}
-
-		// Enviar mensaje
+		// TODO: Modify the send to avoid short-write
 		fmt.Fprintf(
 			c.conn,
 			"[CLIENT %v] Message N°%v\n",
 			c.config.ID,
 			msgID,
 		)
-
-		// Leer respuesta del servidor
 		msg, err := bufio.NewReader(c.conn).ReadString('\n')
-		c.closeClientSocket() // Cerrar conexión después de cada iteración
+		c.conn.Close()
 
 		if err != nil {
 			log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
@@ -104,9 +102,9 @@ func (c *Client) StartClientLoop() {
 			msg,
 		)
 
-		// Esperar antes de enviar el siguiente mensaje
+		// Wait a time between sending one message and the next one
 		time.Sleep(c.config.LoopPeriod)
-	}
 
+	}
 	log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 }
