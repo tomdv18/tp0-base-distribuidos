@@ -58,6 +58,7 @@ func (c *Client) send_message(conn net.Conn) (string, error) {
 	binary.Write(conn, binary.BigEndian, uint16(len))
 	io.WriteString(conn, message)
 	msg, err := bufio.NewReader(conn).ReadString('\n')
+	log.Infof("action: receive_message | result: success | client_id: %v | message: %v", c.config.ID, msg)
 	return msg, err
 }
 
