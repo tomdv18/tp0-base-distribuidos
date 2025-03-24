@@ -28,8 +28,8 @@ def recieve_bet(client_sock):
             bet_objects.append(bet_obj)
             logging.info(f'action: create_bet | result: success | bet: {bet_obj.number}')
     
-    
+
     return bet_objects, failed_bets
 
-def send_response(client_sock, bet_number):
-    client_sock.send("{}\n".format(bet_number).encode('utf-8'))
+def send_response(client_sock, msg):
+    client_sock.send("{}\n".format(msg).encode('utf-8'))
