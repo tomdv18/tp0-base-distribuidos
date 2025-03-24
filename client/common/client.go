@@ -1,13 +1,9 @@
 package common
 
 import (
-	"bufio"
-	"fmt"
 	"net"
 	"time"
 	"os"
-	"io"
-	"encoding/binary"
 	"github.com/op/go-logging"
 )
 
@@ -19,7 +15,7 @@ type ClientConfig struct {
 	ServerAddress string
 	LoopAmount    int
 	LoopPeriod    time.Duration
-	MaxBatchAmmount  int
+	BachMaxAmmount  int
 }
 
 // Client Entity that encapsulates how
@@ -27,7 +23,7 @@ type Client struct {
 	config ClientConfig
 	conn   net.Conn
 	quit chan os.Signal
-	clientData ClientData
+	clientData []ClientData
 }
 
 type ClientData struct {
@@ -75,12 +71,6 @@ func (c *Client) shutdown_client() {
 }
 
 
-func (c *Client) format_message() string {
-	log.Infof("action: message_format | result: success | client_id: %v", c.config.ID)
-	return fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.config.ID, c.clientData.Nombre, c.clientData.Apellido, c.clientData.Documento, c.clientData.Nacimiento, c.clientData.Numero)
-
-}
-
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
 
@@ -92,7 +82,7 @@ func (c *Client) StartClientLoop() {
 		c.createClientSocket()
 
 
-		msg, err := send_message(c.conn, c.config.ID, c.clientData, c.config.maxBatchSize)
+		msg, err := send_message(c.conn, c.config.ID, c.clientData, c.config.BachMaxAmmount)
 		c.conn.Close()
 
 		if err != nil {
@@ -104,7 +94,7 @@ func (c *Client) StartClientLoop() {
 		}
 
 		log.Infof("action: apuesta_enviada | result: success | dni: %v | numero: %v",
-			c.clientData.Documento,
+			c.clientData[0].Documento,
 			msg,
 		)
 

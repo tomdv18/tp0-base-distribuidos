@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"bufio"
 	"time"
  	"syscall"
 	"os/signal"
@@ -21,7 +22,7 @@ var log = logging.MustGetLogger("log")
 // config file ./config.yaml. Environment variables takes precedence over parameters
 // defined in the configuration file. If some of the variables cannot be parsed,
 // an error is returned
-func InitConfig() (*viper.Viper, error, common.ClientData) {
+func InitConfig() (*viper.Viper, error, []common.ClientData) {
 	v := viper.New()
 
 	// Configure viper to read env variables with the CLI_ prefix
@@ -53,11 +54,15 @@ func InitConfig() (*viper.Viper, error, common.ClientData) {
 	// Parse time.Duration variables and return an error if those variables cannot be parsed
 
 	if _, err := time.ParseDuration(v.GetString("loop.period")); err != nil {
-		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration."), common.ClientData{}
+		return nil, errors.Wrapf(err, "Could not parse CLI_LOOP_PERIOD env var as time.Duration."), nil
 	}
 
 
-	clientData := loadBets("./agency.csv")
+	clientData, err := loadBets("./agency.csv")
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not open file"), nil
+	}
+
 	return v, nil, clientData
 }
 
@@ -73,7 +78,7 @@ func loadBets(filePath string) ([]common.ClientData, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		data := strings.Split(line, ";")
+		data := strings.Split(line, ",")
 		if len(data) != 5 {
 			return nil, errors.Errorf("Invalid line format %s", line)
 		}
@@ -116,14 +121,14 @@ func InitLogger(logLevel string) error {
 
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
-func PrintConfig(v *viper.Viper, clientData common.ClientData) {
+func PrintConfig(v *viper.Viper, clientData []common.ClientData) {
 	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s | batch_maxAmmount: %v",
 		v.GetString("id"),
 		v.GetString("server.address"),
 		v.GetInt("loop.amount"),
 		v.GetDuration("loop.period"),
 		v.GetString("log.level"),
-		v.GetInt("batch.maxAmmount")
+		v.GetInt("batch.maxAmmount"),
 	)
 
 
