@@ -71,17 +71,29 @@ func (c *Client) shutdown_client() {
 }
 
 
+
 // StartClientLoop Send messages to the client until some time threshold is met
 func (c *Client) StartClientLoop() {
+	index := 0
+    loop:
+    for {
+        if index >= len(c.clientData) {
+            log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+            break loop
+        }
 
-	loop: for {
-		// Create the connection the server in every loop iteration. Send an
-		c.createClientSocket()
+        // Crear la conexión al servidor en cada iteración del loop
+        c.createClientSocket()
 
+        end := index + c.config.BachMaxAmmount
+        if end > len(c.clientData) {
+            end = len(c.clientData)
+        }
 
-		_, err := send_message(c.conn, c.config.ID, c.clientData, c.config.BachMaxAmmount)
-		c.conn.Close()
+        chunk := c.clientData[index:end]
 
+        // Enviar el chunk al servidor
+        _, err := send_message(c.conn, c.config.ID, chunk)
 		if err != nil {
 			log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
 				c.config.ID,
@@ -91,6 +103,9 @@ func (c *Client) StartClientLoop() {
 		}
 
 		log.Infof("action: apuesta_enviada | result: success")
+		index = end
+
+        c.conn.Close()
 
 
 		select	{

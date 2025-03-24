@@ -6,11 +6,13 @@ import (
 	"io"
 	"encoding/binary"
 	"fmt"
+	"strings"
 )
 
 
-func send_message(conn net.Conn, id string, bets []ClientData, maxBatchSize int) (string, error) {
+func send_message(conn net.Conn, id string, bets []ClientData) (string, error) {
 	var messages []string
+	var msg string
 
 	// Crear el array de mensajes
 	for _, bet := range bets {
@@ -20,52 +22,32 @@ func send_message(conn net.Conn, id string, bets []ClientData, maxBatchSize int)
 
 	log.Infof("action: ammount_messages | result: success | messages: %v", len(messages))
 
-	
-	for i := 0; i < len(messages); i += maxBatchSize {
-		// Determinar el tamaño del batch (puede ser menor que maxBatchSize en el último grupo)
-		end := i + maxBatchSize
-		if end > len(messages) {
-			end = len(messages)
-		}
 
-		// Crear un slice de los mensajes para este grupo
-		batch := messages[i:end]
-		
-		// Concatenar los mensajes en el batch con ">" como delimitador, sin agregar ">" al final
-		batchMessage := ""
-		for j, msg := range batch {
-			if j > 0 {
-				batchMessage += ">"
-			}
-			batchMessage += msg
-		}
+		chunkMessage := strings.Join(messages, ">")
 
-		// Verificar que el mensaje no exceda el tamaño permitido (por ejemplo, 8192 bytes)
-		if len(batchMessage) > 8192 {
+		// Verifico que el mensaje no exceda el tamaño permitido (8 kbytes)
+		if len(chunkMessage) > 8192 {
 			return "", fmt.Errorf("The message is too long")
 		}
 
-		// Enviar el mensaje
-		err := binary.Write(conn, binary.BigEndian, uint16(len(batchMessage)))
+		// Envio el largo
+		err := binary.Write(conn, binary.BigEndian, uint16(len(chunkMessage)))
 		if err != nil {
 			return "", fmt.Errorf("failed to write message length: %v", err)
 		}
-		_, err = io.WriteString(conn, batchMessage)
+		//envio el mensaje
+		_, err = io.WriteString(conn, chunkMessage)
 		if err != nil {
 			return "", fmt.Errorf("failed to send message: %v", err)
 		}
+		// Recibo respuesta del servidor
+		msg, err = bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			log.Errorf("action: receive_message | result: fail | error: %v", err)
+			return "", err
+		}
 
-	}
+		log.Infof("action: receive_message | result: success ")
 	
-
-	// Recibir respuesta del servidor
-	msg, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
-		log.Errorf("action: receive_message | result: fail | error: %v", err)
-		return "", err
-	}
-
-	log.Infof("action: receive_message | result: success ")
-
 	return msg, nil
 }
