@@ -68,6 +68,15 @@ func (c *Client) StartClientLoop() {
 	// Messages if the message amount threshold has not been surpassed
 	for msgID := 1; msgID <= c.config.LoopAmount; msgID++ {
 
+		select	{
+		case <-quit:
+			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
+			c.shutdown_client(quit)
+			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
+			return
+		default:
+		}
+
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()
 
@@ -93,16 +102,6 @@ func (c *Client) StartClientLoop() {
 			c.config.ID,
 			msg,
 		)
-
-		select	{
-		case <-quit:
-			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
-			c.shutdown_client(quit)
-			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
-			return
-		default:
-		}
-
 		// Wait a time between sending one message and the next one
 		time.Sleep(c.config.LoopPeriod)
 
