@@ -43,12 +43,16 @@ class Server:
         """
         try:
 
-            bet = recieve_bet(client_sock)
+            bets, failed = recieve_bet(client_sock)
+
+            for bet in bets:
+                store_bets([bet])
+
+            if failed > 0:
+                logging.info(f'action: apuesta_recibida | result: fail | cantidad: {len(bets) + failed}')
+            else:
+                logging.info(f'action: apuesta_recibida | result: success | cantidad: {len(bets)}')
             
-            store_bets([bet])
-
-            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} |numero: {bet.number}')
-
             send_response(client_sock, bet.number)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
