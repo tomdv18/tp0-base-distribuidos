@@ -82,7 +82,7 @@ func (c *Client) StartClientLoop() {
 		c.createClientSocket()
 
 
-		msg, err := send_message(c.conn, c.config.ID, c.clientData, c.config.BachMaxAmmount)
+		_, err := send_message(c.conn, c.config.ID, c.clientData, c.config.BachMaxAmmount)
 		c.conn.Close()
 
 		if err != nil {
