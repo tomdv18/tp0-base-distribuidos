@@ -54,6 +54,7 @@ func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) 
 func (c *Client) send_message(conn net.Conn) (string, error) {
 	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.config.ID, c.clientData.Nombre, c.clientData.Apellido, c.clientData.Documento, c.clientData.Nacimiento, c.clientData.Numero)
 	len := len(message)
+	log.Infof("action: len_message | result: success | len: %v", len)
 	binary.Write(conn, binary.BigEndian, uint16(len))
 	io.WriteString(conn, message)
 	msg, err := bufio.NewReader(conn).ReadString('\n')
