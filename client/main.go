@@ -90,7 +90,7 @@ func InitLogger(logLevel string) error {
 
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
-func PrintConfig(v *viper.Viper, clientData common.ClientData) {
+func PrintConfig(v *viper.Viper, clientData *common.ClientData) {
 	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s",
 		v.GetString("id"),
 		v.GetString("server.address"),
@@ -99,7 +99,8 @@ func PrintConfig(v *viper.Viper, clientData common.ClientData) {
 		v.GetString("log.level"),
 	)
 
-	log.Infof("action: config | result: success | nombre: %s | apellido: %s | documento: %s | nacimiento: %s | numero: %s",
+
+	log.Infof("action: config_data | result: success | nombre: %s | apellido: %s | documento: %s | nacimiento: %s | numero: %s",
 		clientData.nombre,
 		clientData.apellido,
 		clientData.documento,
