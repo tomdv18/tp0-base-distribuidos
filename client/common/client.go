@@ -19,6 +19,7 @@ type ClientConfig struct {
 	ServerAddress string
 	LoopAmount    int
 	LoopPeriod    time.Duration
+	MaxBatchAmmount  int
 }
 
 // Client Entity that encapsulates how
@@ -39,7 +40,7 @@ type ClientData struct {
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter
-func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) *Client {
+func NewClient(config ClientConfig, quit chan os.Signal, clientData []ClientData) *Client {
 	client := &Client{
 		config: config,
 		quit: quit,
@@ -50,17 +51,6 @@ func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) 
 
 
 
-
-func (c *Client) send_message(conn net.Conn) (string, error) {
-	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.config.ID, c.clientData.Nombre, c.clientData.Apellido, c.clientData.Documento, c.clientData.Nacimiento, c.clientData.Numero)
-	len := len(message)
-	log.Infof("action: len_message | result: success | len: %v", len)
-	binary.Write(conn, binary.BigEndian, uint16(len))
-	io.WriteString(conn, message)
-	msg, err := bufio.NewReader(conn).ReadString('\n')
-	log.Infof("action: receive_message | result: success | client_id: %v | message: %v", c.config.ID, msg)
-	return msg, err
-}
 
 // CreateClientSocket Initializes client socket. In case of
 // failure, error is printed in stdout/stderr and exit 1
@@ -102,7 +92,7 @@ func (c *Client) StartClientLoop() {
 		c.createClientSocket()
 
 
-		msg, err := send_message(c.conn, c.format_message())
+		msg, err := send_message(c.conn, c.config.ID, c.clientData, c.config.maxBatchSize)
 		c.conn.Close()
 
 		if err != nil {

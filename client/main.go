@@ -38,6 +38,8 @@ func InitConfig() (*viper.Viper, error, common.ClientData) {
 	v.BindEnv("loop", "period")
 	v.BindEnv("loop", "amount")
 	v.BindEnv("log", "level")
+	v.BindEnv("batch", "maxAmmount")
+
 
 	// Try to read configuration from config file. If config file
 	// does not exists then ReadInConfig will fail but configuration
@@ -55,15 +57,39 @@ func InitConfig() (*viper.Viper, error, common.ClientData) {
 	}
 
 
-	clientData := common.ClientData{
-		Nombre: os.Getenv("NOMBRE"),
-		Apellido: os.Getenv("APELLIDO"),
-		Documento: os.Getenv("DOCUMENTO"),
-		Nacimiento: os.Getenv("NACIMIENTO"),
-		Numero: os.Getenv("NUMERO"),
-	}
-
+	clientData := loadBets("./agency.csv")
 	return v, nil, clientData
+}
+
+
+func loadBets(filePath string) ([]common.ClientData, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not open file %s", filePath)
+	}
+	defer file.Close()
+
+	var bets []common.ClientData
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		data := strings.Split(line, ";")
+		if len(data) != 5 {
+			return nil, errors.Errorf("Invalid line format %s", line)
+		}
+		bet := common.ClientData{
+			Nombre: data[0],
+			Apellido: data[1],
+			Documento: data[2],
+			Nacimiento: data[3],
+			Numero: data[4],
+		}
+		bets = append(bets, bet)
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, errors.Wrapf(err, "Error reading file %s", filePath)
+	}
+	return bets, nil
 }
 
 // InitLogger Receives the log level to be set in go-logging as a string. This method
@@ -91,22 +117,17 @@ func InitLogger(logLevel string) error {
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
 func PrintConfig(v *viper.Viper, clientData common.ClientData) {
-	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s",
+	log.Infof("action: config | result: success | client_id: %s | server_address: %s | loop_amount: %v | loop_period: %v | log_level: %s | batch_maxAmmount: %v",
 		v.GetString("id"),
 		v.GetString("server.address"),
 		v.GetInt("loop.amount"),
 		v.GetDuration("loop.period"),
 		v.GetString("log.level"),
+		v.GetInt("batch.maxAmmount")
 	)
 
 
-	log.Infof("action: config_data | result: success | nombre: %s | apellido: %s | documento: %s | nacimiento: %s | numero: %s",
-		clientData.Nombre,
-		clientData.Apellido,
-		clientData.Documento,
-		clientData.Nacimiento,
-		clientData.Numero,
-	)
+	log.Infof("action: config_bets_data | result: success | bets_count: %v", len(clientData))
 }
 
 
@@ -128,6 +149,7 @@ func main() {
 		ID:            v.GetString("id"),
 		LoopAmount:    v.GetInt("loop.amount"),
 		LoopPeriod:    v.GetDuration("loop.period"),
+		BachMaxAmmount:    v.GetInt("batch.maxAmmount"),
 	}
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
