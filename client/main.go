@@ -114,6 +114,6 @@ func main() {
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 
-	client := common.NewClient(clientConfig)
-	client.StartClientLoop(quit)
+	client := common.NewClient(clientConfig, quit)
+	client.StartClientLoop()
 }

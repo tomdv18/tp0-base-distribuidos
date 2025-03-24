@@ -23,13 +23,15 @@ type ClientConfig struct {
 type Client struct {
 	config ClientConfig
 	conn   net.Conn
+	quit chan os.Signal
 }
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter
-func NewClient(config ClientConfig) *Client {
+func NewClient(config ClientConfig, quit chan os.Signal) *Client {
 	client := &Client{
 		config: config,
+		quit: quit,
 	}
 	return client
 }
@@ -51,15 +53,14 @@ func (c *Client) createClientSocket() error {
 }
 
 
-func (c *Client) shutdown_client(quit chan os.Signal) {
+func (c *Client) shutdown_client() {
 	c.conn.Close()
 	log.Infof("action: socket_closing | result: success | client_id: %v",c.config.ID)
-	//close(quit)
 }
 
 
 // StartClientLoop Send messages to the client until some time threshold is met
-func (c *Client) StartClientLoop(quit chan os.Signal) {
+func (c *Client) StartClientLoop() {
 
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
@@ -92,9 +93,9 @@ func (c *Client) StartClientLoop(quit chan os.Signal) {
 		)
 
 		select	{
-		case <-quit:
+		case <-c.quit:
 			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
-			c.shutdown_client(quit)
+			c.shutdown_client()
 			log.Infof("action: loop_finished | result: success | client_id: %v", c.config.ID)
 			return
 		default:
