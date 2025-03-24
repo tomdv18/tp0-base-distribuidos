@@ -62,7 +62,7 @@ func (c *Client) shutdown_client(quit chan os.Signal) {
 func (c *Client) StartClientLoop() {
 
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	// There is an autoincremental msgID to identify every message sent
 	// Messages if the message amount threshold has not been surpassed
