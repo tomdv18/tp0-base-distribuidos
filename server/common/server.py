@@ -3,7 +3,7 @@ import logging
 import sys
 import signal
 from .utils import Bet, store_bets
-from .comunications import recieve_bet, send_response
+from .comunications import recieve_message, send_response
 
 
 class Server:
@@ -43,20 +43,23 @@ class Server:
         """
         try:
 
-            bets, failed = recieve_bet(client_sock)
+            is_winners, bets, failed = recieve_message(client_sock)
 
-            for bet in bets:
-                store_bets([bet])
+            if not is_winners:
+                for bet in bets:
+                    store_bets([bet])
 
-            msg =""
-            if failed > 0:
-                msg =f'action: apuesta_recibida | result: fail | cantidad: {len(bets) + failed}'
+                msg =""
+                if failed > 0:
+                    msg =f'action: apuesta_recibida | result: fail | cantidad: {len(bets) + failed}'
+                else:
+                    msg =f'action: apuesta_recibida | result: success | cantidad: {len(bets)}'
+
+                logging.info(msg)
+
+                send_response(client_sock, msg)
             else:
-                msg =f'action: apuesta_recibida | result: success | cantidad: {len(bets)}'
-
-            logging.info(msg)
-            
-            send_response(client_sock, msg)
+                pass
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
