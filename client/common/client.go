@@ -46,6 +46,18 @@ func NewClient(config ClientConfig, quit chan os.Signal, clientData ClientData) 
 	return client
 }
 
+
+
+
+func send_message(conn net.Conn) (string, error) {
+	message := fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.clientData.nombre, c.clientData.apellido, c.clientData.documento, c.clientData.nacimiento, c.clientData.numero, c.config.ID)
+	len := len(message)
+	binary.Write(conn, binary.BigEndian, uint16(len))
+	io.WriteString(conn, message)
+	msg, err := bufio.NewReader(conn).ReadString('\n')
+	return msg, err
+}
+
 // CreateClientSocket Initializes client socket. In case of
 // failure, error is printed in stdout/stderr and exit 1
 // is returned
@@ -79,14 +91,8 @@ func (c *Client) StartClientLoop() {
 		// Create the connection the server in every loop iteration. Send an
 		c.createClientSocket()
 
-		// TODO: Modify the send to avoid short-write
-		fmt.Fprintf(
-			c.conn,
-			"[CLIENT %v] Message N°%v\n",
-			c.config.ID,
-			msgID,
-		)
-		msg, err := bufio.NewReader(c.conn).ReadString('\n')
+
+		msg, err := send_message(c.conn)
 		c.conn.Close()
 
 		if err != nil {

@@ -13,6 +13,11 @@ services:
     entrypoint: /client
     environment:
     - CLI_ID=1
+    - NOMBRE=client1
+    - APELLIDO=apellido1
+    - DOCUMENTO=2345678
+    - NACIMIENTO=1990-01-01
+    - NUMERO=1564
     image: client:latest
     networks:
     - testing_net
@@ -28,4 +33,3 @@ services:
     - testing_net
     volumes:
     - ./server/config.ini:/config.ini
-  
