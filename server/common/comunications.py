@@ -7,17 +7,17 @@ WINNERS = 0x01
 
 
 def recieve_message(client_sock):
-
     message_type = client_sock.recv(1)
     if not message_type:
-        logging.error("not message_type")
-        return False, None,0
+        logging.error("No message_type received")
+        return False, None, 0
     
+    message_type = ord(message_type)
+
     if message_type == NEW_BET:
         return recieve_bet(client_sock)
     elif message_type == WINNERS:
         return recieve_winners(client_sock)
-        
     else:
         logging.error(f"Unknown message type {message_type}")
         return False, None, 0
@@ -65,4 +65,11 @@ def send_response(client_sock, msg):
     client_sock.send("{}\n".format(msg).encode('utf-8'))
 
 def send_winners_response(winners, client_sock):
+    dnis = ""
+    for winner in winners:
+        dnis += f"{winner.dni};"
     
+    if len(dnis) > 0:
+        dnis = dnis[:-1]
+
+    client_sock.send("{}\n".format(dnis).encode('utf-8'))
