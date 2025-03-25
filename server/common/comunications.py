@@ -66,8 +66,8 @@ def send_response(client_sock, msg):
 
 def send_winners_response(client_sock, winners ):
     dnis = ""
-    for winner in winners:
-        dnis += f"{winner.dni};"
+    for winner_dni in winners:
+        dnis += f"{winner_dni};"
     
     if len(dnis) > 0:
         dnis = dnis[:-1]

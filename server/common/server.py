@@ -8,7 +8,7 @@ from .comunications import recieve_message, send_response, send_winners_response
 
 
 class Server:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, port, listen_backlog, expected_clients):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
@@ -20,6 +20,8 @@ class Server:
         self.sockets_clientes = []
         self.clientes_finalizados = []
         self.clientes_fin_lock = threading.Lock()
+        self.expected_clients = expected_clients
+
 
     def run(self):
         """
@@ -64,7 +66,9 @@ class Server:
             else:
                 with self.clientes_fin_lock:
                     self.clientes_finalizados.append(client_sock)
-                    logging.info("action: finalizar_cliente | result: success")
+                    logging.info("action: finalizar_cliente | result: success | cliente: {aux}")
+                    logging.info(f"Clientes finalizados: {len(self.clientes_finalizados)}")
+                    logging.info(f"Clientes totales: {len(self.sockets_clientes)}")
                 
                 if len(self.clientes_finalizados) == len(self.sockets_clientes):
                     logging.info("action: get_winners | result: in_progress")
@@ -111,8 +115,8 @@ class Server:
         winners = [bet for bet in bets if has_won(bet)]
 
         for winner in winners:
-            if winner.id == id:
-                agency_winners.append(winner.agency)
+            if winner.agency == id:
+                agency_winners.append(winner.document)
                 logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.id} | agency: {id}')
 
         send_winners_response(client_sock, agency_winners)
