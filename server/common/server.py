@@ -112,16 +112,17 @@ class Server:
         sys.exit(0)
 
     def send_winners(self, id, client_sock):
-        logging.info(f"action: sending_winners | result: in_progress | agency: {id}")
+
+        logging.info(f"action: sorteo | result: success | agency: {id}")
         agency_winners = []
 
         bets = load_bets()
         winners = [bet for bet in bets if has_won(bet)]
 
         for winner in winners:
-            if winner.agency == id:
+            if int(winner.agency) == int(id):
                 agency_winners.append(winner.document)
-                logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.id} | agency: {id}')
+                logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.agency} | agency: {id}')
 
         send_winners_response(client_sock, agency_winners)
 

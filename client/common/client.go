@@ -89,7 +89,11 @@ func (c *Client) obtain_winners() {
 			c.conn.Close()
 			time.Sleep(c.config.LoopPeriod)
 		} else {
-			log.Infof("action: winners_received | result: success | winners: %v", msg)
+			count := 0
+			if msg != "" {
+				count = len(strings.Split(msg, ";"))
+			}
+			log.Infof("action: winners_received | result: success | winners: %v", count)
 			c.conn.Close()
 			break loop
 		}
