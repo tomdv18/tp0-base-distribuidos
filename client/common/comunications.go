@@ -86,7 +86,7 @@ func send_winners(conn net.Conn, id string) (string, error) {
 		return "", err
 	}
 
-	log.Infof("action: receive_message_winners | result: success | cant_ganadores: %v",msg)
+	log.Infof("action: receive_message_winners | result: success | mensaje: %v",msg)
 
 
 	return msg, nil

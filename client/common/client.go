@@ -93,7 +93,7 @@ func (c *Client) obtain_winners() {
 			if msg != "" {
 				count = len(strings.Split(msg, ";"))
 			}
-			log.Infof("action: winners_received | result: success | winners: %v", count)
+			log.Infof("action: winners_received | result: success | cant_ganadores: %v", count)
 			c.conn.Close()
 			break loop
 		}
