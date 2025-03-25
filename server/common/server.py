@@ -4,7 +4,7 @@ import sys
 import signal
 import threading
 from .utils import Bet, store_bets, load_bets, has_won
-from .comunications import recieve_message, send_response, send_winners_response
+from .comunications import recieve_message, send_response, send_winners_response, send_not_ready
 
 
 class Server:
@@ -65,15 +65,19 @@ class Server:
                 send_response(client_sock, msg)
             else:
                 with self.clientes_fin_lock:
-                    self.clientes_finalizados.append(client_sock)
-                    logging.info("action: finalizar_cliente | result: success | cliente: {aux}")
+                    if not aux in self.clientes_finalizados:
+                        self.clientes_finalizados.append(aux)
+                    logging.info(f"action: finalizar_cliente | result: success | cliente: {aux}")
                     logging.debug(f"Clientes finalizados: {len(self.clientes_finalizados)}")
                 
-                if len(self.clientes_finalizados) == self.expected_clients:
+                if len(self.clientes_finalizados) == int(self.expected_clients):
                     logging.info("action: get_winners | result: in_progress")
+
                     self.send_winners(aux, client_sock)
                     logging.info("action: get_winners | result: success")
-                pass
+                else:
+                    send_not_ready(client_sock)
+                
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
@@ -108,6 +112,7 @@ class Server:
         sys.exit(0)
 
     def send_winners(self, id, client_sock):
+        logging.info(f"action: sending_winners | result: in_progress | agency: {id}")
         agency_winners = []
 
         bets = load_bets()

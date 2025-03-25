@@ -5,6 +5,7 @@ import (
 	"time"
 	"os"
 	"github.com/op/go-logging"
+	"strings"
 )
 
 var log = logging.MustGetLogger("log")
@@ -71,18 +72,36 @@ func (c *Client) shutdown_client() {
 }
 
 func (c *Client) obtain_winners() {
-	c.createClientSocket()
-	msg, err := send_winners(c.conn, c.config.ID)
-	if err != nil {
-		log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",
-			c.config.ID,
-			err,
-		)
-		return
-	}
-	log.Infof("action: winners_received | result: success | winners: %v", msg)
 
-	c.conn.Close()
+	loop :
+	for {
+		c.createClientSocket()
+		msg, err := send_winners(c.conn, c.config.ID)
+		if err != nil {
+			log.Errorf("action: receive_message | result: fail | client_id: %v | error: %v",	c.config.ID, err)
+			c.conn.Close()
+			return
+		}
+		msg = strings.TrimSpace(msg)
+
+		if msg == "NOT_READY" {
+			log.Infof("action: winners_received | result: not_ready | client_id: %v", c.config.ID)
+			c.conn.Close()
+			time.Sleep(c.config.LoopPeriod)
+		} else {
+			log.Infof("action: winners_received | result: success | winners: %v", msg)
+			c.conn.Close()
+			break loop
+		}
+		select	{
+		case <-c.quit:
+			log.Infof("action: finish_signal | result: in_progress | client_id: %v", c.config.ID)
+			c.shutdown_client()
+			break loop
+		default:
+		}
+	}
+
 }
 
 

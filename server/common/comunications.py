@@ -73,3 +73,6 @@ def send_winners_response(client_sock, winners ):
         dnis = dnis[:-1]
 
     client_sock.send("{}\n".format(dnis).encode('utf-8'))
+
+def send_not_ready(client_sock):
+    client_sock.send("NOT_READY\n".encode('utf-8'))
