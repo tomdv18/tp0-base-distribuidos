@@ -67,10 +67,9 @@ class Server:
                 with self.clientes_fin_lock:
                     self.clientes_finalizados.append(client_sock)
                     logging.info("action: finalizar_cliente | result: success | cliente: {aux}")
-                    logging.info(f"Clientes finalizados: {len(self.clientes_finalizados)}")
-                    logging.info(f"Clientes totales: {len(self.sockets_clientes)}")
+                    logging.debug(f"Clientes finalizados: {len(self.clientes_finalizados)}")
                 
-                if len(self.clientes_finalizados) == len(self.sockets_clientes):
+                if len(self.clientes_finalizados) == self.expected_clients:
                     logging.info("action: get_winners | result: in_progress")
                     self.send_winners(aux, client_sock)
                     logging.info("action: get_winners | result: success")
