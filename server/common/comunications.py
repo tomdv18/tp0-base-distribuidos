@@ -64,7 +64,7 @@ def recieve_bet(client_sock):
 def send_response(client_sock, msg):
     client_sock.send("{}\n".format(msg).encode('utf-8'))
 
-def send_winners_response(winners, client_sock):
+def send_winners_response(client_sock, winners ):
     dnis = ""
     for winner in winners:
         dnis += f"{winner.dni};"
