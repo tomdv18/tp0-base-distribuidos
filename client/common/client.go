@@ -85,7 +85,7 @@ func (c *Client) obtain_winners() {
 		msg = strings.TrimSpace(msg)
 
 		if msg == "NOT_READY" {
-			log.Infof("action: winners_received | result: not_ready | client_id: %v", c.config.ID)
+			log.Infof("action: winners_received | result: in_progress | client_id: %v", c.config.ID)
 			c.conn.Close()
 			time.Sleep(c.config.LoopPeriod)
 		} else {
