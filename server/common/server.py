@@ -19,17 +19,14 @@ class Server:
 
         self.sockets_clientes = []
         self.clientes_finalizados = []
-        self.clientes_fin_lock = threading.Lock()
+        self.clientes_fin_lock = threading.Lock()  #Lock para acceder a la lista de clientes finalizados
         self.expected_clients = expected_clients
         
-        self.bets_accessing_lock = threading.Lock()
+        self.bets_accessing_lock = threading.Lock() #Lock para escribir una nueva bet
         
-        self.bets_raffled = False
-        self.bets = []
-        self.bets_raffling_lock = threading.Lock()
-        self.bets_raffled_event = threading.Event() 
+        self.bets_raffling_lock = threading.Lock()  #Lock para acceder a los bets para el sorteo
 
-        self.clientes_end_lock = threading.Lock()
+        self.clientes_end_lock = threading.Lock()   #Lock para acceder a la lista de sockets de clientes (para cerrarlos)
 
     def run(self):
         """
@@ -125,21 +122,15 @@ class Server:
     def send_winners(self, id, client_sock):
 
         logging.info(f"action: sorteo | result: success | agency: {id}")
-        agency_winners = []
+        documents_winners = []
         with self.bets_raffling_lock:
-            if not self.bets_raffled_event.is_set():
-                self.bets = load_bets()
-                self.bets_raffled_event.set()  # Marcar como completado
-                
-        with self.bets_accessing_lock:
-            winners = [bet for bet in self.bets if has_won(bet)]
+            bets = load_bets()
+            winners = [bet for bet in bets if has_won(bet) and int(bet.agency) == int(id)]
 
-            for winner in winners:
-                if int(winner.agency) == int(id):
-                    agency_winners.append(winner.document)
-                    logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.agency} | agency: {id}')
-
-        send_winners_response(client_sock, agency_winners)
+        for winner in winners:
+                documents_winners.append(winner.document)
+                logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.agency} | agency: {id}')
+        send_winners_response(client_sock, documents_winners)
 
 
 
