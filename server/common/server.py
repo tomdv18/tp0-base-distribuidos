@@ -22,7 +22,7 @@ class Server:
         self.clientes_fin_lock = threading.Lock()
         self.expected_clients = expected_clients
         
-        self.bets_saving_lock = threading.Lock()
+        self.bets_accessing_lock = threading.Lock()
         
         self.bets_raffled = False
         self.bets = []
@@ -59,7 +59,7 @@ class Server:
             is_winners, bets, aux = recieve_message(client_sock)
 
             if not is_winners:
-                with self.bets_saving_lock:
+                with self.bets_accessing_lock:
                     for bet in bets:
                         store_bets([bet])
 
@@ -131,8 +131,8 @@ class Server:
                 self.bets = load_bets()
                 self.bets_raffled = True
                 
-        
-        winners = [bet for bet in self.bets if has_won(bet)]
+        with self.bets_accessing_lock:
+            winners = [bet for bet in self.bets if has_won(bet)]
 
         for winner in winners:
             if int(winner.agency) == int(id):
