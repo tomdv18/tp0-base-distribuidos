@@ -27,6 +27,7 @@ class Server:
         self.bets_raffled = False
         self.bets = []
         self.bets_raffling_lock = threading.Lock()
+        self.bets_raffled_event = threading.Event() 
 
         self.clientes_end_lock = threading.Lock()
 
@@ -125,14 +126,13 @@ class Server:
 
         logging.info(f"action: sorteo | result: success | agency: {id}")
         agency_winners = []
-
         with self.bets_raffling_lock:
-            #if not self.bets_raffled:
-                bets = load_bets()
-                #self.bets_raffled = True
+            if not self.bets_raffled_event.is_set():
+                self.bets = load_bets()
+                self.bets_raffled_event.set()  # Marcar como completado
                 
         with self.bets_accessing_lock:
-            winners = [bet for bet in bets if has_won(bet)]
+            winners = [bet for bet in self.bets if has_won(bet)]
 
             for winner in winners:
                 if int(winner.agency) == int(id):
