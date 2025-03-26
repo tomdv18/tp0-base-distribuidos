@@ -178,3 +178,45 @@ Se espera que se redacte una sección del README en donde se indique cómo ejecu
 Se proveen [pruebas automáticas](https://github.com/7574-sistemas-distribuidos/tp0-tests) de caja negra. Se exige que la resolución de los ejercicios pase tales pruebas, o en su defecto que las discrepancias sean justificadas y discutidas con los docentes antes del día de la entrega. El incumplimiento de las pruebas es condición de desaprobación, pero su cumplimiento no es suficiente para la aprobación. Respetar las entradas de log planteadas en los ejercicios, pues son las que se chequean en cada uno de los tests.
 
 La corrección personal tendrá en cuenta la calidad del código entregado y casos de error posibles, se manifiesten o no durante la ejecución del trabajo práctico. Se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección informados  [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+
+## Resolucion de ejercicios
+
+### Ejercicio 1
+
+A la creacion del script se le agrega un archivo en python *generador.py* que generara el compose, utilizando un for para instanciar cada cliente.
+El script puede recibir dos argumentos, que representan el nombre del archivo de salida y la cantidad de clientes. De no pasarse, existen valores por defecto para cada argumento.
+
+### Ejercicio 2
+
+Se montan los volumenes tanto en el servidor como en el/los cliente/s en sus respectivos compose
+
+### Ejercicio 3
+
+Se crea el script validar-echo-server.sh. Este script utiliza docker y hace un netcat a la direccion del servidor, direccion que obtiene de la configuracion del server.
+
+### Ejercicio 4
+
+#### Servidor
+
+Del lado del servidor la resolucion es simple. Se agrega una lista de clientes para llevar un registro de los sockets que estan conectados en el momento.
+Cuando se reciba el pedido de cierre, primero se cierra el socket aceptador para evitar que se conecten nuevos clientes. Luego se van cerrando uno a uno los sockets necesarios para que el servidor termine.
+
+#### Cliente
+Desde el main se crea un channel para poder manejar la llegada de la señal, el mismo es pasado como atributo al cliente. Se agrega en el loop principal un case, para detectar la llegada de la señal. Si se detecta, se cierra la conexion.
+
+### Ejercicio 5
+
+Se crea la estructura de ClientData en el cliente. Para almacenar los datos de una apuesta. Estos datos se absorben desde las variables de entorno
+Ademas, empiezo a estructurar el protocolo. 
+Antes de comenzar a enviar el mensaje de la apuesta se envian primero dos bytes que representan el largo del mensaje a enviar.
+Los mensajes de una apuesta seran strings de largo variable, pero finalizan con un \n. Desde el cliente se envian los campos separados por ';'
+
+A eso le sumo la creacion de los modulos de comunicacion, tanto en el lado del cliente como en el servidor para separar reesponsabilidades
+
+### Ejercicio 6
+
+Desde el lado del cliente lo que se hace es desde un principio cargar e inicializar todas las apuestas, guardandolas en una lista.
+Luego se toma la mayor cantidad posible segun el tamaño del chunk. Como ahora se mandan de a varias apuestas por mensaje, para serializar los mensajes, ademas de separar cada campo de una apuesta por los ';' se agrega un delimitador entre las apuestas, las mismas se separan con un '>'. ejemplo:
+*apuesta1nombre;apuesta1apellido;apuesta1documento>apuesta2nombre;apuesta2apellido;apuesta2documento*
+
+Desde el servidor se hace un chequeo, si no se pasan los campos suficientes se contabiliza la apuesta como fallida y se sigue buscando apuestas, tras finalizar de ver todas las apuestas, se le responde al cliente cuantas apuestas le llegaron al servidor, tanto las falladas como las validas.
