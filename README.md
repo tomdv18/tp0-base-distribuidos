@@ -244,7 +244,7 @@ Para manejar el sincronismo se agregan locks en el servidor.
 - Lock para acceder a la lista de clientes finalizados (Que esperan por la respuesta del sorteo)
 - Lock para escribir una apuesta nueva
 - Lock para acceder a las apuestas para poder hacer el sorteo
-- Lock para acceder a la lista de sockets de los clientes
+- Lock para acceder a la lista de sockets de los clientes para poder eliminarlos tras desconectarse
 
 
 
