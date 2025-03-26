@@ -21,14 +21,7 @@ class Server:
         self.clientes_finalizados = []
         self.clientes_fin_lock = threading.Lock()
         self.expected_clients = expected_clients
-        
-        self.bets_saving_lock = threading.Lock()
-        
-        self.bets_raffled = False
-        self.bets = []
-        self.bets_raffling_lock = threading.Lock()
 
-        self.clientes_end_lock = threading.Lock()
 
     def run(self):
         """
@@ -44,8 +37,7 @@ class Server:
         while True:
             client_sock = self.__accept_new_connection()
             self.sockets_clientes.append(client_sock)
-            client_thread = threading.Thread(target=self.__handle_client_connection, args=(client_sock,))
-            client_thread.start()
+            self.__handle_client_connection(client_sock)
 
     def __handle_client_connection(self, client_sock):
         """
@@ -59,9 +51,8 @@ class Server:
             is_winners, bets, aux = recieve_message(client_sock)
 
             if not is_winners:
-                with self.bets_saving_lock:
-                    for bet in bets:
-                        store_bets([bet])
+                for bet in bets:
+                    store_bets([bet])
 
                 msg =""
                 if aux > 0:
@@ -91,8 +82,7 @@ class Server:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
             client_sock.close()
-            with self.clientes_end_lock:
-                self.sockets_clientes.remove(client_sock)
+            self.sockets_clientes.remove(client_sock)
 
     def __accept_new_connection(self):
         """
@@ -126,13 +116,8 @@ class Server:
         logging.info(f"action: sorteo | result: success | agency: {id}")
         agency_winners = []
 
-        with self.bets_raffling_lock:
-            if not self.bets_raffled:
-                self.bets = load_bets()
-                self.bets_raffled = True
-                
-        
-        winners = [bet for bet in self.bets if has_won(bet)]
+        bets = load_bets()
+        winners = [bet for bet in bets if has_won(bet)]
 
         for winner in winners:
             if int(winner.agency) == int(id):
