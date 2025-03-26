@@ -134,10 +134,10 @@ class Server:
         with self.bets_accessing_lock:
             winners = [bet for bet in self.bets if has_won(bet)]
 
-        for winner in winners:
-            if int(winner.agency) == int(id):
-                agency_winners.append(winner.document)
-                logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.agency} | agency: {id}')
+            for winner in winners:
+                if int(winner.agency) == int(id):
+                    agency_winners.append(winner.document)
+                    logging.info(f'action: get_winner | result: success | winner: {winner.first_name} - {winner.agency} | agency: {id}')
 
         send_winners_response(client_sock, agency_winners)
 
