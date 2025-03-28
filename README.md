@@ -225,6 +225,7 @@ Desde el servidor se hace un chequeo, si no se pasan los campos suficientes se c
 ### Ejercicio 7
 
 Para manejar el caso de las agencias esperando apuestas, desde el servidor se guardan en una lista las agencias que estan esperando los resultados de las apuestas. Lista que despues se comparara con la cantidad de agencias totales.
+Cuando todos los clientes estan ya listos para recibir el resultado (Se compara la cantidad de clientes esperados con la cantidad de clientes listos), se dispara el sorteo.
 
 Al protocolo se le agrega una instancia previa al envio de mensajes.
 Es decir, ahora antes de enviar el largo del proximo mensaje, se envia un solo btye que determina el tipo de mensaje que se le enviara al servidor
@@ -239,10 +240,20 @@ Desde el servidor tambien se finalizan los mensajes con un \n
 
 ### Ejercicio 8
 
-Para manejar el paralelismo, considerando las limitaciones de python, creo adecuado el uso de threads por cliente.
+Para manejar el paralelismo, considerando las limitaciones de python, creo adecuado el uso de threads por mensaje de un cliente.
+
 Para manejar el sincronismo se agregan locks en el servidor. 
 - Lock para acceder a la lista de clientes finalizados (Que esperan por la respuesta del sorteo)
 - Lock para escribir una apuesta nueva
 - Lock para acceder a las apuestas para poder hacer el sorteo
 - Lock para acceder a la lista de sockets de los clientes para poder eliminarlos tras desconectarse
+
+
+#### Porque threads y no procesos?
+
+El Global Interpreter Lock es, resumidamente, un mutex que restringe la ejecución de múltiples hilos dentro de un proceso de Python, garantizando la seguridad en el acceso a los objetos de Python y evitando condiciones de carrera. Esto introduce una limitacion: Reduce el rendimiento en programas multithread con tareas intensivas en CPU, pero sin embargo, muchas operaciones de I/O y procesamiento en bibliotecas como  NumPy no están afectadas.
+
+Los mayores problemas que nos pueden surgir a la hora de lidiar con el GIL, es el acceso concurrente a escribir una apuesta (Tambien podria ser el acceder a las apuestas para realizar el sorteo), como asi tambien el tema de leer desde sockets a la hora de comunicarse. Sin embargo, estas operaciones son de lectura y escritura, que es donde menos se ve afectado un sistema multithreading ya que el GIL se puede liberar temporalmente cuando se realizan operaciones de esta indole, dejando que otros hilos trabajen en paralelo.
+
+
 
