@@ -26,10 +26,16 @@ def recieve_winners(client_sock):
     lenght_bytes = client_sock.recv(2)
     lenght = int.from_bytes(lenght_bytes, byteorder='big')
     logging.info(f'action: recieve_winners | result: success | length: {lenght}')
-    msg = client_sock.recv(lenght).decode('utf-8')
+    msg_bytes = b''  
+    while len(msg_bytes) < lenght:
+        chunk = client_sock.recv(lenght - len(msg_bytes))
+        if not chunk:
+            logging.error("Connection closed before receiving full message")
+            return True, "Connection closed before receiving full message", None
+        msg_bytes += chunk  
 
+    msg = msg_bytes.decode('utf-8') 
     return True, None, msg
-
 
 
 def recieve_bet(client_sock):
@@ -37,7 +43,16 @@ def recieve_bet(client_sock):
     lenght_bytes = client_sock.recv(2)
     lenght = int.from_bytes(lenght_bytes, byteorder='big')
     logging.info(f'action: recieve_length | result: success | length: {lenght}')
-    msg = client_sock.recv(lenght).decode('utf-8')
+
+    msg_bytes = b''  
+    while len(msg_bytes) < lenght:
+        chunk = client_sock.recv(lenght - len(msg_bytes))
+        if not chunk:
+            logging.error("Connection closed before receiving full message")
+            return False, "Connection closed before receiving full message", None
+        msg_bytes += chunk  
+
+    msg = msg_bytes.decode('utf-8') 
     addr = client_sock.getpeername()
     bets = msg.split('>')  
     
